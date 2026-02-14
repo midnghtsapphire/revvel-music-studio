@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "revvel-music-studio": {
+      "command": "python3",
+      "args": ["-m", "mcp_server.main"],
+      "cwd": "/path/to/revvel-music-studio",
+      "env": {},
+      "description": "Revvel Music Studio - Professional music production and distribution tools for artist Revvel and label HOTRS (House of the Rising Sun). Audio processing provided by free and open-source libraries."
+    }
+  }
+}

@@ -1,0 +1,35 @@
+# Revvel Music Studio - Dependencies
+# Audio processing provided by free and open-source libraries.
+
+# Core Audio Processing
+librosa>=0.10.0
+soundfile>=0.12.0
+pydub>=0.25.0
+noisereduce>=3.0.0
+numpy>=1.24.0
+scipy>=1.10.0
+pyloudnorm>=0.1.0
+
+# Voice Synthesis
+edge-tts>=6.1.0
+
+# Stem Separation (install separately for GPU support)
+# demucs>=4.0.0  # pip install demucs
+
+# API Server
+fastapi>=0.100.0
+uvicorn>=0.23.0
+python-multipart>=0.0.6
+python-jose[cryptography]>=3.3.0
+passlib[bcrypt]>=1.7.4
+pydantic>=2.0.0
+
+# MCP Server
+httpx>=0.24.0
+
+# Utilities
+aiofiles>=23.0.0
+python-dotenv>=1.0.0
+
+# Packaging (optional, for building .exe)
+# pyinstaller>=6.0.0  # pip install pyinstaller
