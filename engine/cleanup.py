@@ -478,14 +478,15 @@ def resample_audio(audio: np.ndarray, sr_orig: int, sr_target: int) -> np.ndarra
         raise ImportError("librosa is required: pip install librosa")
 
     if audio.ndim == 2:
-        resampled = np.zeros(
-            (int(len(audio) * sr_target / sr_orig), audio.shape[1]),
-            dtype=audio.dtype
-        )
+        # Resample each channel, then stack (handles length mismatches)
+        channels = []
         for ch in range(audio.shape[1]):
-            resampled[:, ch] = librosa.resample(
+            channels.append(librosa.resample(
                 audio[:, ch], orig_sr=sr_orig, target_sr=sr_target
-            )
+            ))
+        # Ensure all channels have the same length
+        min_len = min(len(c) for c in channels)
+        resampled = np.column_stack([c[:min_len] for c in channels])
         return resampled
     else:
         return librosa.resample(audio, orig_sr=sr_orig, target_sr=sr_target)
