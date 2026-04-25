@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🎛️ Revvel Ops Board</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Space+Mono:wght@400;700&display=swap');
+    body { font-family: 'Space Mono', monospace; background: #0a0a0f; color: #e0e0e0; }
+    .card { background: linear-gradient(145deg, #12121a, #0f0f14); border: 1px solid #1f1f2e; }
+    .status-ok { color: #22c55e; }
+    .status-fail { color: #ef4444; }
+    .btn { transition: all 0.2s; }
+    .btn:hover { transform: translateY(-2px); }
+  </style>
+</head>
+<body class="min-h-screen p-4">
+  <div class="max-w-6xl mx-auto">
+    <!-- Header -->
+    <div class="text-center mb-8">
+      <h1 class="text-3xl font-bold text-purple-400">🎛️ REVVEL OPS BOARD</h1>
+      <p class="text-gray-500">System Operations & Monitoring Dashboard</p>
+    </div>
+
+    <!-- OPERATIONS STATUS -->
+    <div class="card rounded-xl p-6 mb-6">
+      <h2 class="text-xl font-bold text-green-400 mb-4">🎯 Operations Status</h2>
+      <div class="grid grid-cols-4 gap-4">
+        <div class="bg-gray-900 rounded-lg p-4 text-center">
+          <div class="text-2xl font-bold text-green-400" id="websites-count">3</div>
+          <div class="text-sm text-gray-400">Websites Up</div>
+        </div>
+        <div class="bg-gray-900 rounded-lg p-4 text-center">
+          <div class="text-2xl font-bold text-cyan-400" id="apis-count">2</div>
+          <div class="text-sm text-gray-400">APIs Running</div>
+        </div>
+        <div class="bg-gray-900 rounded-lg p-4 text-center">
+          <div class="text-2xl font-bold text-yellow-400">4</div>
+          <div class="text-sm text-gray-400">Cron Jobs</div>
+        </div>
+        <div class="bg-gray-900 rounded-lg p-4 text-center">
+          <div class="text-2xl font-bold text-purple-400" id="issues-count">0</div>
+          <div class="text-sm text-gray-400">Open Issues</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- CRON JOBS -->
+    <div class="card rounded-xl p-6 mb-6">
+      <h2 class="text-xl font-bold text-purple-400 mb-4">⏰ Cron Jobs (revvel-standards)</h2>
+      <table class="w-full text-sm">
+        <thead>
+          <tr class="text-gray-500 text-left border-b border-gray-800">
+            <th class="pb-2">Job</th>
+            <th class="pb-2">Frequency</th>
+            <th class="pb-2">Status</th>
+            <th class="pb-2">Last Run</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr class="border-b border-gray-800">
+            <td class="py-2">Status Monitor</td>
+            <td class="text-gray-400">Hourly</td>
+            <td><span class="status-ok">✅ Active</span></td>
+            <td class="text-gray-400">—</td>
+          </tr>
+          <tr class="border-b border-gray-800">
+            <td class="py-2">Health Check</td>
+            <td class="text-gray-400">15 min</td>
+            <td><span class="status-ok">✅ Active</span></td>
+            <td class="text-gray-400">—</td>
+          </tr>
+          <tr class="border-b border-gray-800">
+            <td class="py-2">Link Checker</td>
+            <td class="text-gray-400">Daily 6am</td>
+            <td><span class="status-ok">✅ Active</span></td>
+            <td class="text-gray-400">—</td>
+          </tr>
+          <tr class="border-b border-gray-800">
+            <td class="py-2">API Monitor</td>
+            <td class="text-gray-400">30 min</td>
+            <td><span class="status-ok">✅ Active</span></td>
+            <td class="text-gray-400">—</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- YOUR APPS -->
+    <div class="card rounded-xl p-6 mb-6">
+      <h2 class="text-xl font-bold text-cyan-400 mb-4">🎤 Your Voice Apps</h2>
+      <div class="grid grid-cols-3 gap-4">
+        <a href="https://midnghtsapphire.github.io/revvel-music-studio/" target="_blank" class="btn bg-gray-900 hover:bg-purple-900 rounded-lg p-4 block">
+          <div class="font-bold text-white">Voice Studio</div>
+          <div class="text-green-400 text-sm">✅ Live</div>
+        </a>
+        <a href="https://midnghtsapphire.github.io/revvel-music-studio/voice-editor.html" target="_blank" class="btn bg-gray-900 hover:bg-purple-900 rounded-lg p-4 block">
+          <div class="font-bold text-white">Voice Editor</div>
+          <div class="text-green-400 text-sm">✅ Live</div>
+        </a>
+        <a href="https://midnghtsapphire.github.io/revvel-music-studio/status-checker.html" target="_blank" class="btn bg-gray-900 hover:bg-purple-900 rounded-lg p-4 block">
+          <div class="font-bold text-white">Status Checker</div>
+          <div class="text-green-400 text-sm">✅ Live</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- QUICK ACTIONS -->
+    <div class="card rounded-xl p-6 mb-6">
+      <h2 class="text-xl font-bold text-yellow-400 mb-4">⚡ Quick Actions</h2>
+      <div class="grid grid-cols-4 gap-4">
+        <a href="https://github.com/midnghtsapphire/revvel-standards/actions" target="_blank" class="btn bg-purple-900 hover:bg-purple-800 rounded-lg p-3 text-center">
+          <div class="text-white text-sm">Cron Runs</div>
+        </a>
+        <a href="https://github.com/midnghtsapphire/revvel-standards/issues" target="_blank" class="btn bg-red-900 hover:bg-red-800 rounded-lg p-3 text-center">
+          <div class="text-white text-sm">Alerts</div>
+        </a>
+        <a href="https://github.com/midnghtsapphire/revvel-standards/tree/main/.github/workflows/cron" target="_blank" class="btn bg-cyan-900 hover:bg-cyan-800 rounded-lg p-3 text-center">
+          <div class="text-white text-sm">Edit Cron</div>
+        </a>
+        <a href="https://github.com/midnghtsapphire/revvel-music-studio" target="_blank" class="btn bg-green-900 hover:bg-green-800 rounded-lg p-3 text-center">
+          <div class="text-white text-sm">Music Repo</div>
+        </a>
+      </div>
+    </div>
+
+    <!-- LINKS -->
+    <div class="card rounded-xl p-6">
+      <h2 class="text-xl font-bold text-pink-400 mb-4">🔗 Quick Links</h2>
+      <div class="grid grid-cols-4 gap-2 text-sm">
+        <a href="https://meetaudreyevans.com" target="_blank" class="text-cyan-400 hover:underline">meetaudreyevans.com</a>
+        <a href="https://midnghtsapphire.github.io/Meetaudreyevans/" target="_blank" class="text-cyan-400 hover:underline">GitHub Hub</a>
+        <a href="https://github.com/midnghtsapphire/revvel-standards" target="_blank" class="text-cyan-400 hover:underline">revvel-standards</a>
+        <a href="https://github.com/midnghtsapphire" target="_blank" class="text-cyan-400 hover:underline">Your Profile</a>
+      </div>
+    </div>
+
+    <div class="text-center mt-8 text-gray-500 text-sm">
+      Last updated: <span id="timestamp"></span>
+    </div>
+  </div>
+
+  <script>
+    document.getElementById('timestamp').textContent = new Date().toLocaleString();
+    
+    // Fetch issues from revvel-standards
+    fetch('https://api.github.com/repos/midnghtsapphire/revvel-standards/open_issues_count')
+      .then(r => r.json())
+      .then(d => document.getElementById('issues-count').textContent = d || '0')
+      .catch(() => document.getElementById('issues-count').textContent = '?');
+  </script>
+</body>
+</html>
