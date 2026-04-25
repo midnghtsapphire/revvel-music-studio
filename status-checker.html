@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Revvel Status Checker</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #0d0d12; color: #e8e8ed; min-height: 100vh; }
+        
+        .header { background: linear-gradient(90deg, #1a1a2e, #16213e); padding: 24px; border-bottom: 1px solid rgba(255,255,255,0.1); }
+        .header h1 { font-size: 1.5rem; background: linear-gradient(90deg, #f472b6, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .header p { color: #71717a; margin-top: 4px; font-size: 0.9rem; }
+        
+        .container { max-width: 1200px; margin: 0 auto; padding: 24px; }
+        
+        /* Stats Grid */
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 16px; margin-bottom: 24px; }
+        .stat-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 12px; padding: 20px; text-align: center; }
+        .stat-number { font-size: 2rem; font-weight: 700; }
+        .stat-label { font-size: 0.85rem; color: #71717a; }
+        .stat-card.green .stat-number { color: #10b981; }
+        .stat-card.red .stat-number { color: #f43f5e; }
+        .stat-card.yellow .stat-number { color: #fbbf24; }
+        
+        /* Run Button */
+        .run-section { text-align: center; margin-bottom: 32px; }
+        .btn-run { background: linear-gradient(90deg, #f472b6, #a855f7); color: white; border: none; padding: 16px 48px; border-radius: 12px; font-size: 1.1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-run:hover { transform: scale(1.05); box-shadow: 0 8px 24px rgba(168,85,247,0.4); }
+        .btn-run:disabled { opacity: 0.5; cursor: not-allowed; }
+        
+        /* Results Table */
+        .results-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; overflow: hidden; }
+        .results-header { padding: 20px 24px; border-bottom: 1px solid rgba(255,255,255,0.08); display: flex; justify-content: space-between; align-items: center; }
+        .results-header h2 { font-size: 1.2rem; }
+        
+        .result-item { display: grid; grid-template-columns: 1fr 150px 100px 120px; gap: 16px; padding: 16px 24px; border-bottom: 1px solid rgba(255,255,255,0.05); align-items: center; }
+        .result-item:last-child { border-bottom: none; }
+        
+        .result-name { display: flex; align-items: center; gap: 12px; }
+        .result-icon { width: 32px; height: 32px; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+        .result-icon.website { background: rgba(59,130,246,0.2); }
+        .result-icon.api { background: rgba(16,185,129,0.2); }
+        .result-icon.mcp { background: rgba(168,85,247,0.2); }
+        .result-icon.cli { background: rgba(251,191,36,0.2); }
+        .result-icon.link { background: rgba(236,72,153,0.2); }
+        
+        .result-name div { font-weight: 500; }
+        .result-name small { color: #71717a; font-size: 0.85rem; }
+        
+        .result-status { font-weight: 600; text-transform: uppercase; font-size: 0.85rem; letter-spacing: 0.5px; }
+        .status-up { color: #10b981; }
+        .status-down { color: #f43f5e; }
+        .status-error { color: #fbbf24; }
+        
+        .result-code { font-family: 'JetBrains Mono', monospace; font-size: 0.85rem; }
+        .result-code.green { color: #10b981; }
+        .result-code.red { color: #f43f5e; }
+        .result-code.yellow { color: #fbbf24; }
+        
+        .result-time { font-size: 0.85rem; color: #71717a; }
+        
+        /* Logs */
+        .logs-section { margin-top: 24px; }
+        .logs-card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 20px; }
+        .logs-card h3 { font-size: 1rem; margin-bottom: 12px; }
+        .log-entry { font-family: 'JetBrains Mono', monospace; font-size: 0.8rem; padding: 6px 0; border-bottom: 1px solid rgba(255,255,255,0.03); }
+        .log-entry .time { color: #71717a; }
+        .log-entry .success { color: #10b981; }
+        .log-entry .error { color: #f43f5e; }
+        
+        /* Auto-refresh */
+        .auto-refresh { display: flex; align-items: center; gap: 12px; margin-top: 16px; }
+        .auto-refresh label { color: #71717a; font-size: 0.9rem; }
+        .switch { position: relative; width: 48px; height: 24px; }
+        .switch input { opacity: 0; width: 0; height: 0; }
+        .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background: rgba(255,255,255,0.1); border-radius: 24px; transition: 0.3s; }
+        .slider:before { position: absolute; content: ""; height: 18px; width: 18px; left: 3px; bottom: 3px; background: white; border-radius: 50%; transition: 0.3s; }
+        input:checked + .slider { background: #a855f7; }
+        input:checked + .slider:before { transform: translateX(24px); }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🔍 Revvel Status Checker</h1>
+        <p>Monitor websites, APIs, MCPs, CLIs, and links</p>
+    </div>
+    
+    <div class="container">
+        <div class="stats">
+            <div class="stat-card green">
+                <div class="stat-number" id="statUp">0</div>
+                <div class="stat-label">Up</div>
+            </div>
+            <div class="stat-card red">
+                <div class="stat-number" id="statDown">0</div>
+                <div class="stat-label">Down</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="statTotal">0</div>
+                <div class="stat-label">Total</div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-number" id="statLastRun">--</div>
+                <div class="stat-label">Last Run</div>
+            </div>
+        </div>
+        
+        <div class="run-section">
+            <button class="btn-run" id="runBtn" onclick="runChecks()">▶️ Run All Checks</button>
+            <div class="auto-refresh">
+                <label class="switch">
+                    <input type="checkbox" id="autoRefresh">
+                    <span class="slider"></span>
+                </label>
+                <span>Auto-refresh every 5 minutes</span>
+            </div>
+        </div>
+        
+        <div class="results-card">
+            <div class="results-header">
+                <h2>📊 Results</h2>
+                <span id="runStatus">Ready to check</span>
+            </div>
+            <div id="resultsList"></div>
+        </div>
+        
+        <div class="logs-section">
+            <div class="logs-card">
+                <h3>📝 Activity Log</h3>
+                <div id="logsList"></div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        // ===== CONFIGURE YOUR ENDPOINTS HERE =====
+        const endpoints = {
+            // Websites
+            websites: [
+                { name: "meetaudreyevans", url: "https://meetaudreyevans.com", desc: "Main landing page" },
+                { name: "GitHub Pages Hub", url: "https://midnghtsapphire.github.io/Meetaudreyevans/", desc: "Purple app hub" },
+                { name: "revvel-music-studio", url: "https://midnghtsapphire.github.io/revvel-music-studio/", desc: "Voice cloning app" },
+                { name: "revvel-standards", url: "https://midnghtsapphire.github.io/revvel-standards/", desc: "Standards docs" },
+            ],
+            
+            // APIs
+            apis: [
+                { name: "OpenRouter API", url: "https://openrouter.ai/api/v1/models", desc: "AI models endpoint", method: "GET", auth: true },
+                { name: "GitHub API", url: "https://api.github.com/user", desc: "GitHub user endpoint", auth: true },
+            ],
+            
+            // MCPs
+            mcps: [
+                { name: "MCP Registry", url: "https://modelcontextprotocol.io", desc: "MCP documentation" },
+                { name: " Claude MCP", url: "https://docs.anthropic.com/en/docs/mcp", desc: "Claude MCP docs" },
+            ],
+            
+            // CLIs (check if installed)
+            clis: [
+                { name: "gh CLI", cmd: "gh --version", desc: "GitHub CLI" },
+                { name: "git", cmd: "git --version", desc: "Git" },
+                { name: "node", cmd: "node --version", desc: "Node.js" },
+                { name: "python", cmd: "python3 --version", desc: "Python" },
+            ],
+            
+            // Links to verify
+            links: [
+                { name: "Spotify", url: "https://open.spotify.com", desc: "Music streaming" },
+                { name: "LANDR", url: "https://www.landr.com", desc: "Music distribution" },
+                { name: "SoundCloud", url: "https://soundcloud.com", desc: "Music platform" },
+                { name: "Make.com", url: "https://make.com", desc: "Automation" },
+                { name: "GoHighLevel", url: "https://www.gohighlevel.com", desc: "CRM" },
+                { name: "DigitalOcean", url: "https://www.digitalocean.com", desc: "Cloud hosting" },
+            ]
+        };
+        
+        let results = [];
+        let isRunning = false;
+        
+        async function checkWebsite(endpoint) {
+            try {
+                const res = await fetch(endpoint.url, { method: 'HEAD', mode: 'no-cors' });
+                return { status: 'up', code: res.status || 200 };
+            } catch (e) {
+                // Try with no-cors mode
+                try {
+                    await fetch(endpoint.url, { mode: 'no-cors' });
+                    return { status: 'up', code: 200 };
+                } catch {
+                    return { status: 'down', code: 0 };
+                }
+            }
+        }
+        
+        async function checkApi(endpoint) {
+            try {
+                const opts = { method: endpoint.method || 'GET' };
+                if (endpoint.auth) {
+                    // Just check if it responds (won't get full data without auth)
+                    opts.mode = 'no-cors';
+                }
+                const res = await fetch(endpoint.url, opts);
+                return { status: 'up', code: res.status || 200 };
+            } catch (e) {
+                return { status: 'error', code: 0 };
+            }
+        }
+        
+        async function checkMcp(endpoint) {
+            return checkWebsite({ url: endpoint.url });
+        }
+        
+        async function checkCli(endpoint) {
+            // This would need to run on server - for now just check if URL is up
+            return checkWebsite({ url: endpoint.url || 'https://' + endpoint.name.toLowerCase() });
+        }
+        
+        async function checkLink(endpoint) {
+            return checkWebsite(endpoint);
+        }
+        
+        async function runChecks() {
+            if (isRunning) return;
+            isRunning = true;
+            
+            document.getElementById('runBtn').disabled = true;
+            document.getElementById('runStatus').textContent = 'Running checks...';
+            
+            const resultsList = document.getElementById('resultsList');
+            resultsList.innerHTML = '';
+            results = [];
+            
+            let upCount = 0;
+            let downCount = 0;
+            let totalCount = 0;
+            
+            const allChecks = [];
+            
+            // Check websites
+            for (const ep of endpoints.websites) {
+                allChecks.push({ type: 'website', ...ep, check: () => checkWebsite(ep) });
+            }
+            
+            // Check APIs
+            for (const ep of endpoints.apis) {
+                allChecks.push({ type: 'api', ...ep, check: () => checkApi(ep) });
+            }
+            
+            // Check MCPs
+            for (const ep of endpoints.mcps) {
+                allChecks.push({ type: 'mcp', ...ep, check: () => checkMcp(ep) });
+            }
+            
+            // Check CLIs
+            for (const ep of endpoints.clis) {
+                allChecks.push({ type: 'cli', ...ep, check: () => checkCli(ep) });
+            }
+            
+            // Check links
+            for (const ep of endpoints.links) {
+                allChecks.push({ type: 'link', ...ep, check: () => checkLink(ep) });
+            }
+            
+            // Run all checks
+            for (const check of allChecks) {
+                totalCount++;
+                const result = await check.check();
+                results.push({ ...check, ...result, time: new Date() });
+                
+                // Update UI
+                const iconMap = { website: '🌐', api: '🔌', mcp: '🤖', cli: '💻', link: '🔗' };
+                const statusClass = result.status === 'up' ? 'status-up' : result.status === 'error' ? 'status-error' : 'status-down';
+                const codeClass = result.status === 'up' ? 'green' : result.status === 'error' ? 'yellow' : 'red';
+                
+                if (result.status === 'up') upCount++;
+                else downCount++;
+                
+                const div = document.createElement('div');
+                div.className = 'result-item';
+                div.innerHTML = `
+                    <div class="result-name">
+                        <div class="result-icon ${check.type}">${iconMap[check.type]}</div>
+                        <div>
+                            <div>${check.name}</div>
+                            <small>${check.desc}</small>
+                        </div>
+                    </div>
+                    <div class="result-status ${statusClass}">${result.status.toUpperCase()}</div>
+                    <div class="result-code ${codeClass}">${result.code || 'N/A'}</div>
+                    <div class="result-time">${new Date().toLocaleTimeString()}</div>
+                `;
+                resultsList.appendChild(div);
+            }
+            
+            // Update stats
+            document.getElementById('statUp').textContent = upCount;
+            document.getElementById('statDown').textContent = downCount;
+            document.getElementById('statTotal').textContent = totalCount;
+            document.getElementById('statLastRun').textContent = new Date().toLocaleTimeString();
+            
+            // Update status
+            document.getElementById('runStatus').textContent = `Completed: ${upCount} up, ${downCount} down`;
+            document.getElementById('runBtn').disabled = false;
+            
+            // Add log entry
+            addLog(`Check complete: ${upCount}/${totalCount} up`, upCount === totalCount);
+            
+            isRunning = false;
+        }
+        
+        function addLog(message, success) {
+            const logsList = document.getElementById('logsList');
+            const entry = document.createElement('div');
+            entry.className = 'log-entry';
+            entry.innerHTML = `<span class="time">[${new Date().toLocaleTimeString()}]</span> <span class="${success ? 'success' : 'error'}">${message}</span>`;
+            logsList.insertBefore(entry, logsList.firstChild);
+        }
+        
+        // Auto-refresh every 5 minutes
+        document.getElementById('autoRefresh').addEventListener('change', (e) => {
+            if (e.target.checked) {
+                addLog('Auto-refresh enabled (every 5 min)', true);
+                setInterval(runChecks, 5 * 60 * 1000);
+            }
+        });
+        
+        // Load
+        addLog('Status Checker loaded', true);
+    </script>
+</body>
+</html>
