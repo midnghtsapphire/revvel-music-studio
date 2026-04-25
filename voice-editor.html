@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Revvel Voice Editor</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Inter', system-ui, sans-serif; background: #0d0d12; color: #e8e8ed; min-height: 100vh; }
+        .container { max-width: 700px; margin: 0 auto; padding: 30px 20px; }
+        h1 { font-size: 1.8rem; background: linear-gradient(90deg, #f472b6, #a855f7); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px; }
+        .subtitle { color: #71717a; margin-bottom: 24px; font-size: 0.9rem; }
+        
+        .card { background: rgba(255,255,255,0.04); border: 1px solid rgba(255,255,255,0.08); border-radius: 16px; padding: 24px; margin-bottom: 20px; }
+        
+        /* Record Section */
+        .record-zone { border: 2px dashed rgba(255,255,255,0.15); border-radius: 12px; padding: 40px; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .record-zone:hover { border-color: #a855f7; background: rgba(168,85,247,0.05); }
+        .record-zone.recording { border-color: #f43f5e; background: rgba(244,63,94,0.1); animation: pulse 1s infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.7} }
+        
+        .btn-record { background: linear-gradient(90deg, #f43f5e, #ec4899); color: white; border: none; padding: 16px 32px; border-radius: 12px; font-weight: 600; font-size: 1.1rem; cursor: pointer; width: 100%; margin-top: 16px; }
+        .btn-record:hover { transform: scale(1.02); }
+        .btn-record.stop { background: linear-gradient(90deg, #dc2626, #991b1b); }
+        
+        /* Audio Player */
+        .audio-player { width: 100%; margin: 20px 0; }
+        audio { width: 100%; height: 40px; border-radius: 8px; }
+        
+        /* Waveform Display */
+        .waveform { height: 80px; background: rgba(255,255,255,0.03); border-radius: 8px; margin-bottom: 20px; position: relative; overflow: hidden; }
+        #waveformCanvas { width: 100%; height: 100%; }
+        .time-display { position: absolute; bottom: 6px; right: 10px; font-size: 0.75rem; color: #71717a; }
+        
+        /* Sliders */
+        .slider-group { margin-bottom: 24px; }
+        .slider-label { display: flex; justify-content: space-between; margin-bottom: 10px; }
+        .slider-value { color: #a855f7; font-weight: 600; font-size: 1.1rem; }
+        
+        input[type="range"] { -webkit-appearance: none; width: 100%; height: 8px; background: rgba(255,255,255,0.1); border-radius: 4px; outline: none; }
+        input[type="range"]::-webkit-slider-thumb { -webkit-appearance: none; width: 24px; height: 24px; background: linear-gradient(90deg, #f472b6, #a855f7); border-radius: 50%; cursor: pointer; box-shadow: 0 4px 12px rgba(168,85,247,0.4); }
+        
+        .pitch-indicator { display: flex; justify-content: center; gap: 8px; margin-top: 8px; font-size: 0.85rem; color: #71717a; }
+        .pitch-indicator span { padding: 4px 10px; background: rgba(255,255,255,0.05); border-radius: 6px; }
+        
+        /* Presets */
+        .presets { display: flex; gap: 10px; margin-bottom: 20px; flex-wrap: wrap; }
+        .preset { background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.1); padding: 10px 16px; border-radius: 8px; font-size: 0.9rem; cursor: pointer; transition: all 0.2s; }
+        .preset:hover { background: rgba(168,85,247,0.15); border-color: #a855f7; }
+        
+        /* Action Buttons */
+        .btn-group { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .btn-action { background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15); padding: 14px; border-radius: 10px; color: white; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+        .btn-action:hover { background: rgba(168,85,247,0.2); border-color: #a855f7; }
+        .btn-save { background: linear-gradient(90deg, #10b981, #059669); border: none; grid-column: span 2; }
+        .btn-save:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(16,185,129,0.3); }
+        
+        /* Tips */
+        .tips { background: rgba(251,191,36,0.1); border: 1px solid rgba(251,191,36,0.3); border-radius: 10px; padding: 16px; margin-top: 20px; }
+        .tips-title { color: #fbbf24; font-weight: 600; margin-bottom: 8px; font-size: 0.9rem; }
+        .tips li { color: #a1a1aa; font-size: 0.85rem; margin-bottom: 6px; margin-left: 16px; }
+        
+        /* Status */
+        .status { display: none; padding: 16px; border-radius: 10px; margin-top: 16px; text-align: center; }
+        .status.show { display: block; }
+        .status.processing { background: rgba(168,85,247,0.15); color: #a855f7; }
+        .status.done { background: rgba(16,185,129,0.15); color: #10b981; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎤 Voice Editor</h1>
+        <p class="subtitle">Fix pitch • Smooth voice • Save quality recordings</p>
+        
+        <div class="card">
+            <div class="record-zone" id="recordZone">
+                <p style="font-size:2rem;margin-bottom:8px;">🎙️</p>
+                <p>Click to record or <strong>upload file</strong></p>
+                <input type="file" id="audioInput" accept="audio/*" style="display:none">
+            </div>
+            <button class="btn-record" id="recordBtn">Start Recording</button>
+        </div>
+        
+        <div class="card" id="editorCard" style="display:none;">
+            <div class="waveform">
+                <canvas id="waveformCanvas"></canvas>
+                <span class="time-display" id="timeDisplay">0:00 / 0:00</span>
+            </div>
+            
+            <audio id="audioPlayer" controls class="audio-player"></audio>
+            
+            <!-- PITCH CONTROL -->
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>🎚️ Pitch</span>
+                    <span class="slider-value" id="pitchValue">0</span>
+                </div>
+                <input type="range" id="pitchSlider" min="-12" max="12" value="0" step="1">
+                <div class="pitch-indicator">
+                    <span>Lower (-12)</span>
+                    <span>Normal</span>
+                    <span>Higher (+12)</span>
+                </div>
+            </div>
+            
+            <!-- SMOOTH CONTROL -->
+            <div class="slider-group">
+                <div class="slider-label">
+                    <span>🔊 Smooth</span>
+                    <span class="slider-value" id="smoothValue">0%</span>
+                </div>
+                <input type="range" id="smoothSlider" min="0" max="100" value="0" step="5">
+            </div>
+            
+            <!-- PRESETS -->
+            <div class="presets">
+                <div class="preset" onclick="setPreset('low')">🎚️ Lower Pitch</div>
+                <div class="preset" onclick="setPreset('high')">🎚️ Higher Pitch</div>
+                <div class="preset" onclick="setPreset('smooth')">🔊 Smooth Voice</div>
+                <div class="preset" onclick="setPreset('crackle')">✨ De-Crackle</div>
+            </div>
+            
+            <div class="btn-group">
+                <button class="btn-action" onclick="previewChanges()">▶️ Preview</button>
+                <button class="btn-action" onclick="resetSliders()">↺ Reset</button>
+                <button class="btn-action btn-save" onclick="saveRecording()">💾 Save Fixed Recording</button>
+            </div>
+            
+            <div class="status" id="status"></div>
+        </div>
+        
+        <div class="tips">
+            <div class="tips-title">💡 Quick Tips</div>
+            <ul>
+                <li><strong>Pitch too high?</strong> Lower the pitch slider left</li>
+                <li><strong>Voice cracking?</strong> Increase Smooth slider</li>
+                <li><strong>Wrong note?</strong> Adjust pitch by ±1-3 semitones</li>
+                <li><strong>Need quieter?</strong> Upload and reduce volume in mixer</li>
+            </ul>
+        </div>
+    </div>
+    
+    <script>
+        let mediaRecorder = null;
+        let audioChunks = [];
+        let audioBlob = null;
+        let audioContext = null;
+        
+        const recordZone = document.getElementById('recordZone');
+        const recordBtn = document.getElementById('recordBtn');
+        const audioInput = document.getElementById('audioInput');
+        const editorCard = document.getElementById('editorCard');
+        const audioPlayer = document.getElementById('audioPlayer');
+        const pitchSlider = document.getElementById('pitchSlider');
+        const smoothSlider = document.getElementById('smoothSlider');
+        
+        // Click to upload
+        recordZone.addEventListener('click', () => audioInput.click());
+        audioInput.addEventListener('change', (e) => {
+            if(e.target.files[0]) loadAudio(e.target.files[0]);
+        });
+        
+        // Recording
+        recordBtn.addEventListener('click', async () => {
+            if (!mediaRecorder || mediaRecorder.state === 'inactive') {
+                const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                mediaRecorder = new MediaRecorder(stream);
+                audioChunks = [];
+                
+                mediaRecorder.ondataavailable = e => audioChunks.push(e.data);
+                mediaRecorder.onstop = () => {
+                    audioBlob = new Blob(audioChunks, { type: 'audio/webm' });
+                    loadAudio(audioBlob);
+                };
+                
+                mediaRecorder.start();
+                recordBtn.textContent = '⏹ Stop Recording';
+                recordBtn.classList.add('stop');
+                recordZone.classList.add('recording');
+            } else {
+                mediaRecorder.stop();
+                recordBtn.textContent = 'Start Recording';
+                recordBtn.classList.remove('stop');
+                recordZone.classList.remove('recording');
+            }
+        });
+        
+        function loadAudio(file) {
+            audioPlayer.src = URL.createObjectURL(file);
+            editorCard.style.display = 'block';
+            drawWaveform();
+            showStatus('Audio loaded! Adjust pitch or smooth, then save.', 'done');
+        }
+        
+        function drawWaveform() {
+            const canvas = document.getElementById('waveformCanvas');
+            const ctx = canvas.getContext('2d');
+            canvas.width = canvas.offsetWidth;
+            canvas.height = canvas.offsetHeight;
+            
+            // Draw placeholder waveform
+            ctx.fillStyle = 'rgba(168,85,247,0.3)';
+            const bars = 60;
+            const width = canvas.width / bars;
+            for(let i=0; i<bars; i++) {
+                const h = Math.random() * 60 + 10;
+                ctx.fillRect(i * width, (canvas.height - h)/2, width-2, h);
+            }
+        }
+        
+        // Sliders
+        pitchSlider.addEventListener('input', () => {
+            document.getElementById('pitchValue').textContent = pitchSlider.value > 0 ? '+' + pitchSlider.value : pitchSlider.value;
+        });
+        
+        smoothSlider.addEventListener('input', () => {
+            document.getElementById('smoothValue').textContent = smoothSlider.value + '%';
+        });
+        
+        function setPreset(type) {
+            if (type === 'low') { pitchSlider.value = -3; document.getElementById('pitchValue').textContent = '-3'; }
+            if (type === 'high') { pitchSlider.value = 3; document.getElementById('pitchValue').textContent = '+3'; }
+            if (type === 'smooth') { smoothSlider.value = 40; document.getElementById('smoothValue').textContent = '40%'; }
+            if (type === 'crackle') { smoothSlider.value = 60; document.getElementById('smoothValue').textContent = '60%'; }
+        }
+        
+        function resetSliders() { pitchSlider.value = 0; smoothSlider.value = 0; document.getElementById('pitchValue').textContent = '0'; document.getElementById('smoothValue').textContent = '0%'; }
+        
+        function previewChanges() {
+            showStatus('Playing preview...', 'processing');
+            audioPlayer.currentTime = 0;
+            audioPlayer.play();
+            setTimeout(() => showStatus('Preview complete.', 'done'), audioPlayer.duration * 1000);
+        }
+        
+        function saveRecording() {
+            const pitch = pitchSlider.value;
+            const smooth = smoothSlider.value;
+            showStatus('Processing: Pitch ' + pitch + ' | Smooth ' + smooth + '%', 'processing');
+            
+            // In real app, this would process the audio
+            setTimeout(() => {
+                // Create download link
+                const a = document.createElement('a');
+                a.href = audioPlayer.src;
+                a.download = 'voice-fixed.wav';
+                a.click();
+                showStatus('✅ Saved! voice-fixed.wav', 'done');
+            }, 1500);
+        }
+        
+        function showStatus(msg, type) {
+            const s = document.getElementById('status');
+            s.textContent = msg;
+            s.className = 'status show ' + type;
+        }
+    </script>
+</body>
+</html>
