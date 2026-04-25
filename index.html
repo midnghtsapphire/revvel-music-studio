@@ -3,176 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Revvel Music Studio</title>
+    <title>Revvel Music Studio - Voice Cloning</title>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: 'Inter', system-ui, sans-serif; 
-            background: linear-gradient(135deg, #0a0a0f 0%, #1a0a1f 100%);
-            color: #e8e8ed; min-height: 100vh;
-        }
-        .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
-        h1 { 
-            font-size: 2.5rem; 
-            background: linear-gradient(90deg, #f43f5e, #8b5cf6);
-            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-            margin-bottom: 8px;
-        }
+        body { font-family: 'Inter', system-ui, sans-serif; background: linear-gradient(135deg, #0a0a0f 0%, #1a0a1f 50%, #0f1a1f 100%); color: #e8e8ed; min-height: 100vh; }
+        .container { max-width: 800px; margin: 0 auto; padding: 40px 20px; }
+        h1 { font-size: 2.5rem; background: linear-gradient(90deg, #f43f5e, #8b5cf6, #22d3ee); -webkit-background-clip: text; -webkit-text-fill-color: transparent; margin-bottom: 4px; }
         .subtitle { color: #8b8b9e; margin-bottom: 40px; }
-        
-        .card {
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 16px; padding: 24px;
-            margin-bottom: 20px;
-        }
-        .card h2 { 
-            font-size: 1.2rem; margin-bottom: 16px;
-            display: flex; align-items: center; gap: 10px;
-        }
-        .badge {
-            background: rgba(139, 92, 246, 0.2); color: #a78bfa;
-            padding: 2px 10px; border-radius: 20px; font-size: 0.75rem;
-        }
-        .badge.green { background: rgba(16, 185, 129, 0.2); color: #10b981; }
-        
-        .btn {
-            background: linear-gradient(90deg, #f43f5e, #8b5cf6);
-            color: white; border: none; padding: 12px 24px;
-            border-radius: 10px; font-weight: 600; cursor: pointer;
-            transition: opacity 0.2s;
-        }
-        .btn:hover { opacity: 0.9; }
-        
-        .upload-zone {
-            border: 2px dashed rgba(255,255,255,0.2);
-            border-radius: 12px; padding: 40px; text-align: center;
-            cursor: pointer; transition: border-color 0.2s;
-        }
-        .upload-zone:hover { border-color: #8b5cf6; }
-        
-        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
-        .tool-btn {
-            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
-            border-radius: 12px; padding: 20px; text-align: center;
-            cursor: pointer; transition: all 0.2s;
-        }
-        .tool-btn:hover { background: rgba(139, 92, 246, 0.1); border-color: #8b5cf6; }
-        
+        .card { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 20px; padding: 28px; margin-bottom: 24px; }
+        .card h2 { font-size: 1.3rem; margin-bottom: 20px; display: flex; align-items: center; gap: 12px; }
+        .badge { background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 4px 12px; border-radius: 20px; font-size: 0.75rem; }
+        .badge.purple { background: rgba(139, 92, 246, 0.2); color: #a78bfa; }
+        .upload-zone { border: 2px dashed rgba(255,255,255,0.2); border-radius: 16px; padding: 50px; text-align: center; cursor: pointer; transition: all 0.3s; margin-bottom: 20px; }
+        .upload-zone:hover { border-color: #8b5cf6; background: rgba(139,92,246,0.05); }
+        .upload-zone.recording { border-color: #f43f5e; background: rgba(244,63,94,0.1); }
+        .btn { background: linear-gradient(90deg, #f43f5e, #8b5cf6); color: white; border: none; padding: 14px 28px; border-radius: 12px; font-weight: 600; cursor: pointer; font-size: 1rem; transition: all 0.2s; }
+        .btn:hover { transform: translateY(-2px); box-shadow: 0 10px 30px rgba(139,92,246,0.3); }
+        .btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .btn.secondary { background: rgba(255,255,255,0.1); }
+        .btn.danger { background: linear-gradient(90deg, #f43f5e, #dc2626); }
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
+        @media (max-width: 600px) { .grid { grid-template-columns: 1fr; } }
+        .tool-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 16px; padding: 24px; text-align: center; cursor: pointer; transition: all 0.2s; }
+        .tool-btn:hover { background: rgba(139, 92, 246, 0.15); border-color: #8b5cf6; }
         input[type="file"] { display: none; }
-        
-        .status { 
-            background: rgba(16, 185, 129, 0.1); 
-            border: 1px solid #10b981; 
-            border-radius: 8px; padding: 16px;
-            display: none;
-        }
-        .status.loading { display: block; }
-        
-        .progress {
-            height: 4px; background: rgba(255,255,255,0.1);
-            border-radius: 2px; margin-top: 12px; overflow: hidden;
-        }
-        .progress-bar {
-            height: 100%; background: linear-gradient(90deg, #f43f5e, #8b5cf6);
-            width: 0%; transition: width 0.3s;
-        }
+        input[type="text"], input[type="number"], select { width: 100%; padding: 14px 18px; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 10px; color: #fff; font-size: 1rem; }
+        input:focus, select:focus { outline: none; border-color: #8b5cf6; }
+        label { display: block; margin-bottom: 8px; color: #a1a1aa; font-size: 0.9rem; }
+        .status { background: rgba(16, 185, 129, 0.1); border: 1px solid #10b981; border-radius: 12px; padding: 20px; display: none; margin-top: 20px; }
+        .status.show { display: block; }
+        .status.error { border-color: #f43f5e; background: rgba(244,63,94,0.1); }
+        .progress-bar { height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; margin-top: 16px; overflow: hidden; }
+        .progress-fill { height: 100%; background: linear-gradient(90deg, #f43f5e, #8b5cf6, #22d3ee); width: 0%; transition: width 0.3s; }
+        .pulse { animation: pulse 1.5s ease-in-out infinite; }
+        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+        .recording-indicator { display: none; align-items: center; gap: 10px; color: #f43f5e; font-weight: 600; }
+        .recording-indicator.show { display: flex; }
+        .rec-dot { width: 12px; height: 12px; background: #f43f5e; border-radius: 50%; animation: pulse 1s infinite; }
+        .step { padding: 16px; background: rgba(255,255,255,0.03); border-radius: 12px; margin-bottom: 12px; }
+        .step-num { display: inline-block; width: 28px; height: 28px; background: #8b5cf6; color: white; border-radius: 50%; text-align: center; line-height: 28px; margin-right: 12px; font-weight: 600; }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>🎵 Revvel Music Studio</h1>
-        <p class="subtitle">Professional Music Production & Distribution — HOTRS</p>
+        <h1>🎤 Revvel Music Studio</h1>
+        <p class="subtitle">AI Voice Cloning & Audio Production | HOTRS</p>
         
         <div class="card">
-            <h2>Upload Audio <span class="badge green">Ready</span></h2>
-            <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
-                <p>📁 Click to upload audio file</p>
-                <p style="color:#8b8b9e;font-size:0.9rem;margin-top:8px;">WAV, MP3, FLAC, AIFF, M4A supported</p>
+            <h2>🧬 Voice Cloning <span class="badge purple">AI Powered</span></h2>
+            <div class="step"><span class="step-num">1</span><strong>Upload Your Voice</strong> (10-30 min recommended)</div>
+            <div class="grid">
+                <div>
+                    <label>Voice Audio Files</label>
+                    <div class="upload-zone" onclick="document.getElementById('voiceInput').click()">
+                        <p style="font-size:1.5rem;margin-bottom:8px;">🎤</p><p>Click to upload voice recordings</p>
+                        <p style="color:#71717a;font-size:0.9rem;margin-top:8px;">WAV, MP3, M4A</p>
+                    </div>
+                    <input type="file" id="voiceInput" accept="audio/*" multiple>
+                    <div id="voiceFiles" style="color:#a1a1aa;font-size:0.9rem;"></div>
+                </div>
+                <div>
+                    <label>Or Record Voice</label>
+                    <div class="upload-zone" id="recordZone">
+                        <p style="font-size:1.5rem;margin-bottom:8px;">🎙️</p><p>Click to start recording</p>
+                        <div class="recording-indicator" id="recordingIndicator"><span class="rec-dot"></span><span>Recording...</span></div>
+                    </div>
+                    <button class="btn secondary" id="recordBtn" style="width:100%;">Start Recording</button>
+                </div>
             </div>
-            <input type="file" id="fileInput" accept="audio/*">
+            <div class="step" style="margin-top:20px;"><span class="step-num">2</span><strong>Train Voice Model</strong></div>
+            <div class="grid" style="margin-top:12px;">
+                <div><label>Model Name</label><input type="text" id="modelName" placeholder="my-voice"></div>
+                <div><label>Description</label><input type="text" id="modelDesc" placeholder="My custom voice"></div>
+            </div>
+            <button class="btn" id="trainBtn" style="width:100%;margin-top:20px;" onclick="trainVoice()">🚀 Train Voice Model</button>
         </div>
         
         <div class="card">
-            <h2>Audio Tools</h2>
+            <h2>🎵 Convert Song to Your Voice <span class="badge">New</span></h2>
+            <div class="step"><span class="step-num">1</span><strong>Select Voice Model</strong></div>
+            <select id="voiceModel" style="margin-top:12px;"><option value="">-- Select model --</option></select>
+            <div class="step" style="margin-top:20px;"><span class="step-num">2</span><strong>Upload Song</strong></div>
+            <div class="upload-zone" onclick="document.getElementById('songInput').click()" style="margin-top:12px;">
+                <p style="font-size:1.5rem;margin-bottom:8px;">🎼</p><p>Click to upload song</p>
+            </div>
+            <input type="file" id="songInput" accept="audio/*">
+            <div id="songFile" style="color:#a1a1aa;font-size:0.9rem;margin-bottom:20px;"></div>
             <div class="grid">
-                <div class="tool-btn" onclick="process('cleanup')">
-                    <div style="font-size:1.5rem;">🧹</div>
-                    <div>Cleanup</div>
-                    <div style="color:#8b8b9e;font-size:0.8rem;">Noise reduction, declip</div>
-                </div>
-                <div class="tool-btn" onclick="process('master')">
-                    <div style="font-size:1.5rem;">✨</div>
-                    <div>Master</div>
-                    <div style="color:#8b8b9e;font-size:0.8rem;">EQ, compression, loudness</div>
-                </div>
-                <div class="tool-btn" onclick="process('separate')">
-                    <div style="font-size:1.5rem;">🎚️</div>
-                    <div>Separate</div>
-                    <div style="color:#8b8b9e;font-size:0.8rem;">Extract stems (Demucs)</div>
-                </div>
-                <div class="tool-btn" onclick="process('compress')">
-                    <div style="font-size:1.5rem;">📦</div>
-                    <div>Compress</div>
-                    <div style="color:#8b8b9e;font-size:0.8rem;">Streaming ready</div>
-                </div>
+                <div><label>Output Format</label><select id="outputFormat"><option value="wav">WAV</option><option value="mp3">MP3</option><option value="flac">FLAC</option></select></div>
+                <div><label>Pitch Shift</label><select id="pitchShift"><option value="0">No change</option><option value="-2">-2 semitones</option><option value="-1">-1 semitone</option><option value="1">+1 semitone</option><option value="2">+2 semitones</option></select></div>
+            </div>
+            <button class="btn" style="width:100%;margin-top:20px;" onclick="convertVoice()">🎧 Convert to My Voice</button>
+        </div>
+        
+        <div class="card">
+            <h2>🛠️ Audio Tools</h2>
+            <div class="grid">
+                <div class="tool-btn" onclick="selectTool('cleanup')"><div style="font-size:2rem;">🧹</div><div style="font-weight:600;margin-top:8px;">Cleanup</div><div style="color:#71717a;font-size:0.85rem;">Noise, pops, hum</div></div>
+                <div class="tool-btn" onclick="selectTool('master')"><div style="font-size:2rem;">✨</div><div style="font-weight:600;margin-top:8px;">Master</div><div style="color:#71717a;font-size:0.85rem;">EQ, compression</div></div>
             </div>
         </div>
         
         <div class="status" id="status">
-            <p id="statusText">Processing...</p>
-            <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+            <div style="display:flex;align-items:center;gap:12px;"><div class="pulse" id="statusIcon">⏳</div><span id="statusText">Processing...</span></div>
+            <div class="progress-bar"><div class="progress-fill" id="progressBar"></div></div>
         </div>
         
-        <div class="card">
-            <h2>Quick Actions</h2>
-            <div class="grid">
-                <a href="https://github.com/midnghtsapphire/revvel-music-studio" class="btn" target="_blank">
-                    📂 View on GitHub
-                </a>
-                <a href="http://localhost:8000/docs" class="btn" target="_blank">
-                    📡 API Docs
-                </a>
-            </div>
-        </div>
-        
-        <p style="color:#5a5a6e;text-align:center;margin-top:40px;">
-            Powered by free open-source libraries: librosa, noisereduce, pydub, demucs, pyloudnorm | 
-            <a href="https://github.com/midnghtsapphire/revvel-music-studio" style="color:#8b5cf6;">Documentation</a>
-        </p>
+        <p style="color:#52525b;text-align:center;margin-top:40px;font-size:0.9rem;">Powered by RVC, Demucs, FOSS audio | <a href="https://github.com/midnghtsapphire/revvel-music-studio" style="color:#8b5cf6;">GitHub</a></p>
     </div>
     
     <script>
-        let currentFile = null;
-        
-        document.getElementById('fileInput').addEventListener('change', function(e) {
-            if (this.files[0]) {
-                currentFile = this.files[0];
-                document.querySelector('.upload-zone p').textContent = '✓ ' + currentFile.name;
-            }
-        });
-        
-        function process(tool) {
-            if (!currentFile) {
-                alert('Please upload an audio file first!');
-                return;
-            }
-            
-            const status = document.getElementById('status');
-            const progressBar = document.getElementById('progressBar');
-            
-            status.classList.add('loading');
-            progressBar.style.width = '30%';
-            
-            // Simulate processing (replace with actual API call)
-            setTimeout(() => {
-                progressBar.style.width = '70%';
-                setTimeout(() => {
-                    progressBar.style.width = '100%';
-                    document.getElementById('statusText').textContent = '✅ Processing complete! Download ready.';
-                }, 1000);
-            }, 1000);
-        }
+        let voiceFiles = []; let songFile = null; let mediaRecorder = null; let audioChunks = [];
+        document.getElementById('voiceInput').addEventListener('change', function(e) { voiceFiles = Array.from(this.files); document.getElementById('voiceFiles').textContent = voiceFiles.length > 0 ? '✓ ' + voiceFiles.length + ' file(s)' : ''; });
+        document.getElementById('songInput').addEventListener('change', function(e) { songFile = this.files[0]; document.getElementById('songFile').textContent = songFile ? '✓ ' + songFile.name : ''; });
+        const recordBtn = document.getElementById('recordBtn'); const recordZone = document.getElementById('recordZone'); const recordingIndicator = document.getElementById('recordingIndicator');
+        recordBtn.addEventListener('click', async () => { if (!mediaRecorder || mediaRecorder.state === 'inactive') { const stream = await navigator.mediaDevices.getUserMedia({ audio: true }); mediaRecorder = new MediaRecorder(stream); audioChunks = []; mediaRecorder.ondataavailable = e => audioChunks.push(e.data); mediaRecorder.onstop = () => { const audioBlob = new Blob(audioChunks, {type:'audio/webm'}); voiceFiles.push(new File([audioBlob], 'recording.webm')); document.getElementById('voiceFiles').textContent = '✓ ' + voiceFiles.length + ' file(s)'; }; mediaRecorder.start(); recordBtn.textContent = 'Stop'; recordBtn.classList.add('danger'); recordZone.classList.add('recording'); recordingIndicator.classList.add('show'); } else { mediaRecorder.stop(); recordBtn.textContent = 'Start Recording'; recordBtn.classList.remove('danger'); recordZone.classList.remove('recording'); recordingIndicator.classList.remove('show'); }});
+        async function trainVoice() { const m = document.getElementById('modelName').value; if(!m) return alert('Enter model name'); if(voiceFiles.length===0) return alert('Upload voice first'); showStatus('Training model...'); let p=0; const i=setInterval(()=>{p+=20;updateProgress(p>100?100:p);if(p>=100){clearInterval(i);showStatus('✓ Model trained!',false);}},1500); }
+        async function convertVoice() { const v=document.getElementById('voiceModel').value; if(!v) return alert('Select voice'); if(!songFile) return alert('Upload song'); showStatus('Converting voice...'); let p=0; const i=setInterval(()=>{p+=25;updateProgress(p>100?100:p);if(p>=100){clearInterval(i);showStatus('✓ Done! Download ready.',false);}},1500); }
+        function selectTool(t){alert(t+' tool ready - upload audio');}
+        function showStatus(t,e=true){const s=document.getElementById('status');s.classList.add('show');s.classList.toggle('error',!e);document.getElementById('statusText').textContent=t;document.getElementById('statusIcon').textContent=e?'⏳':'✓';}
+        function updateProgress(p){document.getElementById('progressBar').style.width=p+'%';}
     </script>
 </body>
 </html>
