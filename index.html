@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Revvel Music Studio</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { 
+            font-family: 'Inter', system-ui, sans-serif; 
+            background: linear-gradient(135deg, #0a0a0f 0%, #1a0a1f 100%);
+            color: #e8e8ed; min-height: 100vh;
+        }
+        .container { max-width: 900px; margin: 0 auto; padding: 40px 20px; }
+        h1 { 
+            font-size: 2.5rem; 
+            background: linear-gradient(90deg, #f43f5e, #8b5cf6);
+            -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+            margin-bottom: 8px;
+        }
+        .subtitle { color: #8b8b9e; margin-bottom: 40px; }
+        
+        .card {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 16px; padding: 24px;
+            margin-bottom: 20px;
+        }
+        .card h2 { 
+            font-size: 1.2rem; margin-bottom: 16px;
+            display: flex; align-items: center; gap: 10px;
+        }
+        .badge {
+            background: rgba(139, 92, 246, 0.2); color: #a78bfa;
+            padding: 2px 10px; border-radius: 20px; font-size: 0.75rem;
+        }
+        .badge.green { background: rgba(16, 185, 129, 0.2); color: #10b981; }
+        
+        .btn {
+            background: linear-gradient(90deg, #f43f5e, #8b5cf6);
+            color: white; border: none; padding: 12px 24px;
+            border-radius: 10px; font-weight: 600; cursor: pointer;
+            transition: opacity 0.2s;
+        }
+        .btn:hover { opacity: 0.9; }
+        
+        .upload-zone {
+            border: 2px dashed rgba(255,255,255,0.2);
+            border-radius: 12px; padding: 40px; text-align: center;
+            cursor: pointer; transition: border-color 0.2s;
+        }
+        .upload-zone:hover { border-color: #8b5cf6; }
+        
+        .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 16px; }
+        .tool-btn {
+            background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1);
+            border-radius: 12px; padding: 20px; text-align: center;
+            cursor: pointer; transition: all 0.2s;
+        }
+        .tool-btn:hover { background: rgba(139, 92, 246, 0.1); border-color: #8b5cf6; }
+        
+        input[type="file"] { display: none; }
+        
+        .status { 
+            background: rgba(16, 185, 129, 0.1); 
+            border: 1px solid #10b981; 
+            border-radius: 8px; padding: 16px;
+            display: none;
+        }
+        .status.loading { display: block; }
+        
+        .progress {
+            height: 4px; background: rgba(255,255,255,0.1);
+            border-radius: 2px; margin-top: 12px; overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%; background: linear-gradient(90deg, #f43f5e, #8b5cf6);
+            width: 0%; transition: width 0.3s;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎵 Revvel Music Studio</h1>
+        <p class="subtitle">Professional Music Production & Distribution — HOTRS</p>
+        
+        <div class="card">
+            <h2>Upload Audio <span class="badge green">Ready</span></h2>
+            <div class="upload-zone" onclick="document.getElementById('fileInput').click()">
+                <p>📁 Click to upload audio file</p>
+                <p style="color:#8b8b9e;font-size:0.9rem;margin-top:8px;">WAV, MP3, FLAC, AIFF, M4A supported</p>
+            </div>
+            <input type="file" id="fileInput" accept="audio/*">
+        </div>
+        
+        <div class="card">
+            <h2>Audio Tools</h2>
+            <div class="grid">
+                <div class="tool-btn" onclick="process('cleanup')">
+                    <div style="font-size:1.5rem;">🧹</div>
+                    <div>Cleanup</div>
+                    <div style="color:#8b8b9e;font-size:0.8rem;">Noise reduction, declip</div>
+                </div>
+                <div class="tool-btn" onclick="process('master')">
+                    <div style="font-size:1.5rem;">✨</div>
+                    <div>Master</div>
+                    <div style="color:#8b8b9e;font-size:0.8rem;">EQ, compression, loudness</div>
+                </div>
+                <div class="tool-btn" onclick="process('separate')">
+                    <div style="font-size:1.5rem;">🎚️</div>
+                    <div>Separate</div>
+                    <div style="color:#8b8b9e;font-size:0.8rem;">Extract stems (Demucs)</div>
+                </div>
+                <div class="tool-btn" onclick="process('compress')">
+                    <div style="font-size:1.5rem;">📦</div>
+                    <div>Compress</div>
+                    <div style="color:#8b8b9e;font-size:0.8rem;">Streaming ready</div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="status" id="status">
+            <p id="statusText">Processing...</p>
+            <div class="progress"><div class="progress-bar" id="progressBar"></div></div>
+        </div>
+        
+        <div class="card">
+            <h2>Quick Actions</h2>
+            <div class="grid">
+                <a href="https://github.com/midnghtsapphire/revvel-music-studio" class="btn" target="_blank">
+                    📂 View on GitHub
+                </a>
+                <a href="http://localhost:8000/docs" class="btn" target="_blank">
+                    📡 API Docs
+                </a>
+            </div>
+        </div>
+        
+        <p style="color:#5a5a6e;text-align:center;margin-top:40px;">
+            Powered by free open-source libraries: librosa, noisereduce, pydub, demucs, pyloudnorm | 
+            <a href="https://github.com/midnghtsapphire/revvel-music-studio" style="color:#8b5cf6;">Documentation</a>
+        </p>
+    </div>
+    
+    <script>
+        let currentFile = null;
+        
+        document.getElementById('fileInput').addEventListener('change', function(e) {
+            if (this.files[0]) {
+                currentFile = this.files[0];
+                document.querySelector('.upload-zone p').textContent = '✓ ' + currentFile.name;
+            }
+        });
+        
+        function process(tool) {
+            if (!currentFile) {
+                alert('Please upload an audio file first!');
+                return;
+            }
+            
+            const status = document.getElementById('status');
+            const progressBar = document.getElementById('progressBar');
+            
+            status.classList.add('loading');
+            progressBar.style.width = '30%';
+            
+            // Simulate processing (replace with actual API call)
+            setTimeout(() => {
+                progressBar.style.width = '70%';
+                setTimeout(() => {
+                    progressBar.style.width = '100%';
+                    document.getElementById('statusText').textContent = '✅ Processing complete! Download ready.';
+                }, 1000);
+            }, 1000);
+        }
+    </script>
+</body>
+</html>
