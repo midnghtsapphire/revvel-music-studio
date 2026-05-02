@@ -300,3 +300,39 @@ Audio processing provided by free and open-source libraries:
 - [Edge TTS](https://github.com/rany2/edge-tts) - Text-to-speech
 - [FFmpeg](https://ffmpeg.org/) - Audio/video processing
 - [SciPy](https://scipy.org/) - Signal processing
+
+---
+
+## Test
+
+| Feature | Status | Notes |
+|--------|--------|-------|
+| Audio Cleanup | ✅ Ready | Requires FFmpeg |
+| Mastering | ✅ Ready | Requires FFmpeg |
+| Stem Separation | ✅ Ready | Requires FFmpeg |
+| Voice Synthesis | ✅ Ready | Requires FFmpeg |
+| Video Generation | ✅ Ready | Requires FFmpeg |
+| CLI Tool | ✅ Ready | `python -m revvel_music_studio` |
+| Build Exe | ✅ Ready | `python build_exe.py` |
+
+**Requirements:** Python 3.9+, FFmpeg
+
+**Quick Test:**
+```bash
+pip install -r requirements.txt
+python -m revvel_music_studio --help
+```
+
+---
+
+## Deployment
+
+**Production:** https://revvel-music-studio.vercel.app (for web UI if deployed)
+**CLI:** Available via npm/pip
+**MCP Server:** Available via `mcp_config.json`
+
+**Web UIs Available:**
+- `index.html` — Main application
+- `voice-editor.html` — Voice synthesis
+- `status-checker.html` — Distribution status
+- `ops-board.html` — Operations dashboard
