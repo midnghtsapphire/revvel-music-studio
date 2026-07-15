@@ -1,5 +1,12 @@
 # Revvel Music Studio
 
+
+<!-- AUTO-PACKAGE-BADGES:START -->
+<!-- Auto-generated package badges -->
+
+![PyPI version](https://img.shields.io/pypi/v/revvel-music-studio?style=flat-square&logo=pypi&color=green) ![PyPI downloads](https://img.shields.io/pypi/dm/revvel-music-studio?style=flat-square&color=brightgreen) ![PyPI license](https://img.shields.io/pypi/l/revvel-music-studio?style=flat-square) [![Deployed](https://img.shields.io/badge/deployed-1.0.0-blue?style=flat-square)](https://pypi.org/project/revvel-music-studio)
+
+<!-- AUTO-PACKAGE-BADGES:END -->
 **Professional Music Production & Distribution Platform**
 
 **Artist:** Revvel | **Label:** HOTRS (House of the Rising Sun)
